@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Patrick+Hand&display=swap');
+
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+    font-family: 'Patrick Hand', cursive; /* Goofy hand-written font */
+    line-height: 1.7; /* Slightly increased line-height for readability */
+    color: #444; /* Darker grey for better contrast on light bg */
+
+    /* Background Image Settings */
+    background-image: url('images/wallpaperflare.com_wallpaper.jpg');
+    background-color: #f0f0f0; /* Fallback color */
+    background-size: cover; /* Scale image to cover the entire element */
+    background-position: center center; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+    background-attachment: fixed; /* Keep background fixed during scroll */
+
+    padding: 0;
+    margin: 0;
+}
+
+.container {
+    max-width: 1100px; /* Slightly narrower? */
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+header {
+    /* background: linear-gradient(to right, #6a11cb, #2575fc); */
+    background-color: #FF6F61; /* Weird Coral/Orange */
+    color: #fff;
+    padding: 2rem 0; /* More padding */
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 5px dashed #E65C50; /* Dashed weird border */
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    transform: rotate(-1deg); /* Slight tilt */
+    margin-top: 10px; /* Space for tilt */
+}
+
+header h1 {
+    font-family: 'Luckiest Guy', cursive; /* Goofy Display Font */
+    font-size: 3.5em; /* Even Larger title */
+    font-weight: normal; /* Luckiest Guy is bold by default */
+    text-shadow: 2px 2px 0px #E65C50, 4px 4px 0px rgba(0,0,0,0.1); /* More pronounced shadow */
+    margin-bottom: 0.8rem;
+    letter-spacing: 2px;
+}
+
+header p.subtitle {
+    font-size: 2.5em; /* Larger than normal p, smaller than h1 */
+    font-family: 'Luckiest Guy', cursive; /* Match H1 font */
+    color: #f0f0f0; /* Slightly lighter than main header text */
+    margin-top: -10px; /* Pull it closer to H1 */
+    margin-bottom: 15px; /* Space before the next paragraph */
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+}
+
+header p {
+    font-size: 1.2em;
+    color: #fff;
+    font-weight: bold;
+}
+
+main {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 15px 5px 15px 5px; /* Wobbly radius */
+    border: 3px solid #ddd;
+    box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
+}
+
+#sticker-gallery h2,
+#submission-form h2 {
+    font-family: 'Luckiest Guy', cursive;
+    text-align: center;
+    margin-bottom: 20px; /* Adjusted margin */
+    color: #5CDB95; /* Slime Green */
+    font-size: 2.5em;
+    border-bottom: 3px dotted #ccc;
+    padding-bottom: 8px;
+    font-weight: normal;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 0 #eee;
+}
+
+#sticker-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 30px; /* Increased gap */
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+.sticker-pack {
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid #ccc;
+    box-shadow: 3px 3px 5px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    position: relative; /* Needed for potential pseudo-elements */
+}
+
+/* Add a subtle random rotation on hover */
+.sticker-pack:hover {
+    transform: translateY(-5px) rotate(var(--rotate-deg, 2deg));
+    box-shadow: 6px 6px 15px rgba(0,0,0,0.15);
+}
+
+/* Apply pseudo-random rotation via nth-child */
+.sticker-pack:nth-child(3n+1):hover { --rotate-deg: -3deg; }
+.sticker-pack:nth-child(3n+2):hover { --rotate-deg: 4deg; }
+.sticker-pack:nth-child(3n+3):hover { --rotate-deg: -1deg; }
+
+
+.sticker-pack img {
+    max-width: 100px;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 15px;
+    background-color: #eee;
+    border-radius: 50%; /* Make image circular */
+    border: 3px dashed #FF6F61; /* Match header color */
+    padding: 3px; /* Space between dash and image */
+}
+
+.sticker-pack p {
+    font-weight: bold; /* Hand font needs bold */
+    margin-bottom: 15px;
+    word-wrap: break-word;
+    color: #333;
+    min-height: 2.4em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+}
+
+.sticker-pack a,
+#submission-form button {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #5CDB95; /* Slime Green */
+    color: #fff;
+    text-decoration: none;
+    border-radius: 30px; /* Pill shape */
+    font-size: 1em;
+    font-weight: bold;
+    border: 2px solid #4CAF85;
+    box-shadow: 2px 2px 0px #4CAF85;
+    transition: all 0.15s ease;
+    font-family: 'Luckiest Guy', cursive; /* Match headings */
+    letter-spacing: 1px;
+}
+
+.sticker-pack a:hover,
+#submission-form button:hover {
+    background: #4CAF85; /* Darker Green */
+    box-shadow: 1px 1px 0px #3a9a6e;
+    transform: translateY(1px) translateX(1px) rotate(-1deg);
+}
+
+#pagination-controls button {
+    display: inline-block;
+    padding: 8px 15px;
+    background: #eee;
+    color: #555;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 0.9em;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    box-shadow: 1px 1px 0px #ccc;
+    transition: all 0.15s ease;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+#pagination-controls button:disabled {
+    background: #f5f5f5;
+    color: #bbb;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#pagination-controls button:not(:disabled):hover {
+    background: #ddd;
+    box-shadow: none;
+    transform: translateY(1px) translateX(1px);
+}
+
+
+#submission-form form {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: #f0f8ff; /* Alice blue background */
+    border: 3px dashed #aaa;
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+#submission-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+    font-size: 1.1em;
+}
+
+#submission-form input[type="url"],
+#submission-form input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-family: 'Patrick Hand', cursive;
+}
+
+#submission-form input[type="url"]:focus,
+#submission-form input[type="text"]:focus {
+    border-color: #FF6F61; /* Match header */
+    outline: 0;
+    box-shadow: 0 0 5px rgba(255, 111, 97, 0.5);
+}
+
+/* Keep button style consistent using shared rule above */
+#submission-form button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+#submission-form small {
+    display: block;
+    text-align: center;
+    margin-top: -5px; /* Pull closer to input */
+    margin-bottom: 15px; /* Add space before button */
+    color: #777;
+    font-size: 0.9em;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 25px 0;
+    border-top: 5px dotted #ddd;
+    color: #888;
+    background-color: #eee; /* Light footer background */
+    width: 100%;
+    font-size: 1.1em;
+}
+
+footer .contract-info {
+    margin-top: 15px; /* Space above contract info */
+    font-size: 0.9em; /* Slightly smaller */
+    color: #666;
+}
+
+footer #contract-address {
+    font-family: monospace; /* Better for addresses */
+    background-color: #ddd;
+    padding: 2px 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    word-break: break-all; /* Prevent long address from breaking layout */
+}
+
+footer #contract-address:hover {
+    background-color: #ccc;
+}
+
+footer .copy-feedback {
+    display: inline-block; /* Allow margin */
+    margin-left: 10px;
+    font-weight: bold;
+    color: #5CDB95; /* Slime green */
+    transition: opacity 0.3s ease;
+    opacity: 0; /* Hidden by default */
+}
+
+footer .copy-feedback.show {
+    opacity: 1; /* Visible when class 'show' is added */
+} 

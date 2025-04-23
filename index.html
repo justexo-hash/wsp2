@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weird Sticker Packs</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/favicoon.png">
+</head>
+<body>
+    <header>
+        <h1>Weird Sticker Packs</h1>
+        <p class="subtitle">$WSP</p>
+        <p>Discover and share the weirdest sticker packs on Telegram!</p>
+    </header>
+
+    <div class="container">
+        <main>
+            <section id="sticker-gallery">
+                <h2>Sticker Pack Gallery</h2>
+                <!-- Sticker packs will be loaded here dynamically from Firestore -->
+                <!-- Removed static sticker pack divs -->
+            </section>
+
+            <div id="pagination-controls" style="text-align: center; margin-top: 20px;">
+                <button id="prev-button" disabled>Previous</button>
+                <button id="next-button" disabled>Next</button>
+            </div>
+
+            <section id="submission-form">
+                <h2>Submit a Sticker Pack</h2>
+                <form>
+                    <label for="pack-link">Telegram Sticker Pack Link:</label><br>
+                    <input type="url" id="pack-link" name="pack-link" required placeholder="https://t.me/addstickers/YourPackName"><br><br>
+
+                    <button type="submit">Submit Pack</button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Weird Sticker Packs</p>
+        <div class="contract-info">
+            <span>Contract: </span>
+            <span id="contract-address" title="Click to copy">SOON!</span>
+            <span id="copy-feedback" class="copy-feedback"></span> <!-- For 'Copied!' message -->
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Your custom script -->
+    <script src="script.js"></script>
+</body>
+</html> 
