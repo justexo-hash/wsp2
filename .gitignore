@@ -67,3 +67,25 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Firebase service account key
+serviceAccountKey.json
+
+# Local node modules (if installed in root)
+/node_modules
+
+# Firebase emulator logs and data
+*.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*.jar
+*.cache
+*.data
+
+# Build output
+/dist
+/build
+
+# Ignore node_modules in functions folder too (if not already ignored)
+/functions/node_modules

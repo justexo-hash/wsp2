@@ -13,8 +13,15 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const TelegramBot = require("node-telegram-bot-api");
+const axios = require("axios"); // Import axios for HTTP requests
+const path = require("path");
+const os = require("os");
+const fs = require("fs");
 
 admin.initializeApp();
+// Remove unused db variable
+// const db = admin.firestore();
+const storage = admin.storage(); // Initialize storage
 
 // Get Telegram Bot Token from Firebase environment configuration
 // Run this command in your terminal BEFORE deploying:
@@ -61,104 +68,105 @@ exports.fetchStickerPreview = functions.firestore
       }
 
       const data = snap.data();
-      const docRef = snap.ref; // Reference to the document
+      const docRef = snap.ref;
+      const docId = context.params.docId;
 
       const packLink = data.link;
       const packName = getPackNameFromLink(packLink);
 
       if (!packName) {
-        // Reformat long line
         functions.logger.warn(
-            `Invalid sticker link format for doc ${context.params.docId}: ` +
-            `${packLink}`,
+            `Invalid sticker link format for doc ${docId}: ${packLink}`,
         );
-        return null; // Exit if link format is wrong
+        // Update Firestore document to indicate failure?
+        // await docRef.update({ name: "Invalid Link", imageUrl: null });
+        return null;
       }
 
-      // Reformat long line
-      functions.logger.info(
-          `Processing pack: ${packName} for doc ${context.params.docId}`,
-      );
+      functions.logger.info(`Processing pack: ${packName} for doc ${docId}`);
 
       try {
         // 1. Get Sticker Set info
         const stickerSet = await bot.getStickerSet(packName);
-
-        if (!stickerSet || !stickerSet.stickers || stickerSet.stickers.length === 0) {
-          // Reformat long line
-          functions.logger.warn(
-              `No stickers found for pack: ${packName}`,
-          );
-          return null;
-        }
-
-        // 2. Get the thumbnail of the first sticker
-        const firstSticker = stickerSet.stickers[0];
-        // Replace optional chaining with standard check for compatibility
-        const thumb = firstSticker.thumb;
-        // Explicitly check for thumb and file_id
-        let thumbFileId = null;
-        // eslint-disable-next-line max-len
-        if (thumb && thumb.file_id) {
-          thumbFileId = thumb.file_id;
-        }
-
-        if (!thumbFileId) {
-          // Reformat long line
-          functions.logger.warn(
-              "No thumbnail file_id found for first sticker in pack: " +
-              `${packName}`,
-          );
-          return null;
-        }
-
-        // 3. Get the file path using the file_id
-        const fileInfo = await bot.getFile(thumbFileId);
-        const filePath = fileInfo.file_path;
-
-        if (!filePath) {
-          // Reformat long line
-          functions.logger.error(
-              `Could not get file path for file_id: ${thumbFileId}`,
-          );
-          return null;
-        }
-
-        // 4. Construct the image URL
-        const imageUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
-        functions.logger.info(
-            `Generated image URL for ${packName}: ${imageUrl}`,
-        );
-
-        // Also get the pack title
         const packTitle = stickerSet.title;
         functions.logger.info(`Fetched pack title: ${packTitle}`);
 
-        // 5. Update the Firestore document with the image URL and name(title)
-        return docRef.update({
-          imageUrl: imageUrl,
-          name: packTitle, // Save Telegram's title as 'name'
+        if (!stickerSet || !stickerSet.stickers || stickerSet.stickers.length === 0) {
+          functions.logger.warn(`No stickers found for pack: ${packName}`);
+          return docRef.update({name: packTitle || "Empty Pack", imageUrl: null});
+        }
+
+        // 2. Get the thumbnail file_id
+        const firstSticker = stickerSet.stickers[0];
+        const thumb = firstSticker.thumb;
+        const thumbFileId = thumb && thumb.file_id ? thumb.file_id : null;
+
+        if (!thumbFileId) {
+          functions.logger.warn(
+              `No thumbnail file_id found for pack: ${packName}`,
+          );
+          return docRef.update({name: packTitle, imageUrl: null});
+        }
+
+        // 3. Get the temporary Telegram file path
+        const fileInfo = await bot.getFile(thumbFileId);
+        const telegramFilePath = fileInfo.file_path;
+
+        if (!telegramFilePath) {
+          functions.logger.error(`Could not get file path for file_id: ${thumbFileId}`);
+          return docRef.update({name: packTitle, imageUrl: null});
+        }
+
+        // 4. Construct the temporary download URL
+        const tempDownloadUrl = `https://api.telegram.org/file/bot${botToken}/${telegramFilePath}`;
+
+        // 5. Download the image using axios
+        const response = await axios({url: tempDownloadUrl, responseType: "arraybuffer"});
+        const imageData = Buffer.from(response.data, "binary");
+        const fileExtension = path.extname(telegramFilePath) || ".webp"; // Assume .webp if unknown
+        const tempFileName = `${docId}${fileExtension}`;
+        const tempFilePath = path.join(os.tmpdir(), tempFileName); // Save to Cloud Function's temp dir
+
+        // Ensure the directory exists (should be handled by OS)
+        // Write the image buffer to the temp file
+        await fs.promises.writeFile(tempFilePath, imageData);
+        functions.logger.info(`Downloaded image to temp file: ${tempFilePath}`);
+
+        // 6. Upload the image to Firebase Storage
+        const bucket = storage.bucket(); // Default bucket
+        const destinationPath = `sticker_previews/${tempFileName}`;
+        await bucket.upload(tempFilePath, {
+          destination: destinationPath,
+          metadata: {
+            contentType: response.headers["content-type"] || "image/webp", // Use actual content type or default
+            cacheControl: "public, max-age=31536000", // Cache for 1 year
+          },
         });
+        functions.logger.info(`Uploaded image to Storage: ${destinationPath}`);
+
+        // 7. Clean up the temporary file
+        await fs.promises.unlink(tempFilePath);
+
+        // 8. Get the public URL for the uploaded file
+        const file = bucket.file(destinationPath);
+        await file.makePublic();
+        const publicStorageUrl = file.publicUrl();
+        functions.logger.info(`Generated public Storage URL: ${publicStorageUrl}`);
+
+        // 9. Update the Firestore document with the *Storage* URL and name
+        return docRef.update({imageUrl: publicStorageUrl, name: packTitle});
       } catch (error) {
-        // Handle potential errors (e.g., pack not found, bot API errors)
-        if (error.response && error.response.body) {
-          const errorBody = JSON.parse(error.response.body);
-          if (errorBody.description.includes("sticker set not found")) {
-            // Corrected indentation and reformatted long line
-            functions.logger.warn(
-                `Sticker pack not found on Telegram: ${packName}`,
-            );
-          } else {
-            // Corrected indentation and reformatted long line
-            functions.logger.error(
-                `Telegram API Error for pack ${packName}: ` +
-                `${errorBody.description}`,
-            );
-          }
-        } else {
-          // Corrected indentation and reformatted long line
+        functions.logger.error(`Error processing pack ${packName} (doc ${docId}):`, error);
+        // Update with name if available, but indicate image error
+        try {
+          const stickerSet = await bot.getStickerSet(packName).catch(() => null);
+          const packTitle = stickerSet && stickerSet.title ? stickerSet.title : "Error Processing";
+          await docRef.update({name: packTitle,
+            imageUrl: null,
+            error: error.message || "Preview fetch failed"});
+        } catch (updateError) {
           functions.logger.error(
-              `Error fetching sticker preview for ${packName}:`, error,
+              `Failed to update doc ${docId} with error state:`, updateError,
           );
         }
         return null;
